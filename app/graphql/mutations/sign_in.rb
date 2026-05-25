@@ -11,7 +11,8 @@ module Mutations
 
     def resolve(email_address:, password:)
       user = User.authenticate_by(email_address: email_address, password: password)
-      raise GraphQL::ExecutionError, "Invalid email or password" unless user
+      # TODO: rate limit failed attempts
+      raise GraphQL::ExecutionError, "Incorrect email or password" unless user
 
       controller.start_new_session_for(user)
       { user: user }

@@ -1,0 +1,101 @@
+services:
+  # Rails API Backend
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        RUBY_VERSION: 4.0.5
+    image: backend-api-dev:latest
+    container_name: backend_api
+    command: bash -c "rm -f tmp/pids/server.pid && bin/rails server -b 0.0.0.0 -p 3000"
+    environment:
+      DATABASE_USER: ${DB_USER:-task_manager}
+      DATABASE_PASSWORD: ${DB_PASSWORD:-task_manager_dev_password}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: ${DB_PORT:-5432}
+      DATABASE_NAME: ${DB_NAME:-task_manager_db}
+      APP_HOSTNAME: "http://localhost:3000"
+
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+          pids: 256
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  # PostgreSQL Database
+  postgres:
+    image: postgres:18.4
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-task_manager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-task_manager_dev_password}
+      POSTGRES_DB: ${DB_NAME:-task_manager_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - ./docker/postgres/data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-task_manager} -d ${DB_NAME:-task_manager_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+          pids: 256
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  # PostgreSQL Web
+  pgweb:
+    image: sosedoff/pgweb:latest
+    platform: linux/amd64
+    container_name: pgweb_viewer
+    restart: unless-stopped
+    environment:
+      - PGWEB_DATABASE_URL=postgres://${DB_USER:-task_manager}:${DB_PASSWORD:-task_manager_dev_password}@postgres:5432/${DB_NAME:-task_manager_db}?sslmode=disable
+    command: ["--bind=0.0.0.0", "--listen=8091"]
+    ports:
+      - "8091:8091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+          pids: 64
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

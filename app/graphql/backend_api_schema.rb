@@ -8,20 +8,15 @@ class BackendApiSchema < GraphQL::Schema
   use GraphQL::Dataloader
 
   # GraphQL-Ruby calls this when something goes wrong while running a query:
+  # :nocov:
   def self.type_error(err, context)
-    # if err.is_a?(GraphQL::InvalidNullError)
-    #   # report to your bug tracker here
-    #   return nil
-    # end
     super
   end
 
-  # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this method
-    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+  # :nocov:
 
   # Limit the size of incoming queries:
   max_query_string_tokens(5000)

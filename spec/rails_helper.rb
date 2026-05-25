@@ -11,6 +11,7 @@ require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
 require 'factory_bot_rails'
+require_relative "support/graphql_helpers"
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -68,6 +69,9 @@ RSpec.configure do |config|
   # config.infer_spec_type_from_file_location!
 
   config.include FactoryBot::Syntax::Methods
+  config.include GraphqlHelpers, type: :request
+
+  config.before(:each, type: :request) { host! "localhost" }
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!

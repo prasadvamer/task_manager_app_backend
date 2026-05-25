@@ -34,3 +34,5 @@
 # Ignore local Docker postgres data.
 /docker/postgres/data/
 
+# Ignore Coverage
+/coverage/

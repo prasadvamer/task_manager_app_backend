@@ -25,5 +25,11 @@ FactoryBot.define do
         create_list(:task, 2, user: task.user, parent: task, title: "Subtask")
       end
     end
+
+    trait :with_tags do
+      after(:create) do |task|
+        task.sync_tags!( %w[work urgent] )
+      end
+    end
   end
 end

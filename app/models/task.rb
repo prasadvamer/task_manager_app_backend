@@ -2,6 +2,8 @@ class Task < ApplicationRecord
   belongs_to :user
   belongs_to :parent, class_name: "Task", optional: true
   has_many :subtasks, -> { order(:position) }, class_name: "Task", foreign_key: "parent_id", dependent: :destroy, inverse_of: :parent
+  has_many :task_tags, dependent: :destroy
+  has_many :tags, through: :task_tags
 
   enum :status, { todo: "todo", in_progress: "in_progress", done: "done" }, default: :todo
   enum :priority, { low: "low", medium: "medium", high: "high" }, default: :medium
@@ -15,6 +17,11 @@ class Task < ApplicationRecord
   before_save :sync_completed_at
 
   scope :top_level, -> { where(parent_id: nil) }
+
+  def sync_tags!(tag_names)
+    normalized = Array(tag_names).map { |name| name.to_s.strip.downcase }.reject(&:blank?).uniq
+    self.tags = normalized.map { |name| user.tags.find_or_create_by!(name: name) }
+  end
 
   def toggle_complete!
     if done?

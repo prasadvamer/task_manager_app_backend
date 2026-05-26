@@ -73,4 +73,13 @@ RSpec.describe Task, type: :model do
       expect { parent.destroy }.to change(Task, :count).by(-3)
     end
   end
+
+  describe "#sync_tags!" do
+    it "creates and assigns tags for the user" do
+      task = create(:task)
+      task.sync_tags!(%w[Work URGENT])
+
+      expect(task.tags.pluck(:name)).to match_array(%w[work urgent])
+    end
+  end
 end

@@ -24,5 +24,43 @@ module Types
     def me
       context[:current_user]
     end
+
+    field :tasks, [ Types::TaskType ], null: false,
+      description: "List top-level tasks for the current user" do
+      argument :status, Types::TaskStatusEnum, required: false
+      argument :priority, Types::TaskPriorityEnum, required: false
+      argument :tag_id, ID, required: false
+    end
+
+    def tasks(status: nil, priority: nil, tag_id: nil)
+      raise GraphQL::ExecutionError, "Authentication required" unless context[:current_user]
+
+      scope = context[:current_user].tasks.top_level.order(:position)
+      scope = scope.where(status: status) if status
+      scope = scope.where(priority: priority) if priority
+      scope = scope.joins(:tags).where(tags: { id: tag_id }) if tag_id
+
+      scope.distinct
+    end
+
+    field :task, Types::TaskType, null: true,
+      description: "Fetch a single task by ID" do
+      argument :id, ID, required: true
+    end
+
+    def task(id:)
+      raise GraphQL::ExecutionError, "Authentication required" unless context[:current_user]
+
+      context[:current_user].tasks.find_by(id: id)
+    end
+
+    field :tags, [ Types::TagType ], null: false,
+      description: "List tags for the current user"
+
+    def tags
+      raise GraphQL::ExecutionError, "Authentication required" unless context[:current_user]
+
+      context[:current_user].tags.order(:name)
+    end
   end
 end

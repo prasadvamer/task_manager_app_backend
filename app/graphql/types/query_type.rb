@@ -35,7 +35,7 @@ module Types
     def tasks(status: nil, priority: nil, tag_id: nil)
       raise GraphQL::ExecutionError, "Authentication required" unless context[:current_user]
 
-      scope = context[:current_user].tasks.top_level.order(:position)
+      scope = context[:current_user].tasks.top_level.includes(:tags).order(:position)
       scope = scope.where(status: status) if status
       scope = scope.where(priority: priority) if priority
       scope = scope.joins(:tags).where(tags: { id: tag_id }) if tag_id

@@ -14,4 +14,18 @@ module GraphqlHelpers
   def graphql_errors
     JSON.parse(response.body)["errors"]
   end
+
+  def sign_in_as(user, password: "password12345")
+    graphql_post(
+      query: <<~GQL,
+        mutation SignIn($emailAddress: String!, $password: String!) {
+          signIn(input: { emailAddress: $emailAddress, password: $password }) {
+            user { id }
+          }
+        }
+      GQL
+      variables: { emailAddress: user.email_address, password: password },
+      operation_name: "SignIn"
+    )
+  end
 end

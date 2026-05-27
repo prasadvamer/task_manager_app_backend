@@ -31,6 +31,28 @@ class Task < ApplicationRecord
     end
   end
 
+  def reorder_to!(new_position)
+    raise ArgumentError, "Position must be zero or greater" if new_position.negative?
+
+    transaction do
+      siblings = user.tasks.where(parent_id: parent_id).lock.order(:position, :id).to_a
+      max_index = siblings.length - 1
+      target_index = new_position.clamp(0, max_index)
+      current_index = siblings.index { |sibling| sibling.id == id }
+
+      return self if current_index == target_index
+
+      siblings.delete_at(current_index)
+      siblings.insert(target_index, self)
+
+      siblings.each_with_index do |sibling, index|
+        sibling.update_column(:position, index) if sibling.position != index
+      end
+
+      reload
+    end
+  end
+
   private
 
   def assign_position

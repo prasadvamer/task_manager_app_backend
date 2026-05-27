@@ -82,4 +82,45 @@ RSpec.describe Task, type: :model do
       expect(task.tags.pluck(:name)).to match_array(%w[work urgent])
     end
   end
+
+  describe "#reorder_to!" do
+    it "moves a task down and shifts siblings up" do
+      user = create(:user)
+      first = create(:task, user: user, title: "First")
+      second = create(:task, user: user, title: "Second")
+      third = create(:task, user: user, title: "Third")
+
+      second.reorder_to!(2)
+
+      expect(first.reload.position).to eq(0)
+      expect(third.reload.position).to eq(1)
+      expect(second.reload.position).to eq(2)
+    end
+
+    it "moves a task up and shifts siblings down" do
+      user = create(:user)
+      first = create(:task, user: user, title: "First")
+      second = create(:task, user: user, title: "Second")
+      third = create(:task, user: user, title: "Third")
+
+      third.reorder_to!(0)
+
+      expect(third.reload.position).to eq(0)
+      expect(first.reload.position).to eq(1)
+      expect(second.reload.position).to eq(2)
+    end
+
+    it "reorders within subtasks independently of top-level tasks" do
+      user = create(:user)
+      parent = create(:task, user: user, title: "Parent")
+      subtask_a = create(:task, user: user, parent: parent, title: "Subtask A")
+      subtask_b = create(:task, user: user, parent: parent, title: "Subtask B")
+
+      subtask_b.reorder_to!(0)
+
+      expect(subtask_b.reload.position).to eq(0)
+      expect(subtask_a.reload.position).to eq(1)
+      expect(parent.reload.position).to eq(0)
+    end
+  end
 end

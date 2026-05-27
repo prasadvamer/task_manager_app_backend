@@ -9,5 +9,6 @@ module Types
     field :update_task, mutation: Mutations::UpdateTask
     field :delete_task, mutation: Mutations::DeleteTask
     field :toggle_task_complete, mutation: Mutations::ToggleTaskComplete
+    field :reorder_task, mutation: Mutations::ReorderTask
   end
 end

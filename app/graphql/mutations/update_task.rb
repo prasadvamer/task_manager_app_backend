@@ -10,7 +10,6 @@ module Mutations
     argument :due_date, GraphQL::Types::ISO8601DateTime, required: false
     argument :priority, Types::TaskPriorityEnum, required: false
     argument :status, Types::TaskStatusEnum, required: false
-    argument :position, Integer, required: false
     argument :tag_names, [ String ], required: false
 
     field :task, Types::TaskType, null: true

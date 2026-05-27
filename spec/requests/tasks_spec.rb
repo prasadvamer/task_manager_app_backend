@@ -144,6 +144,36 @@ RSpec.describe "tasks API", type: :request do
     end
   end
 
+  describe "reorderTask mutation" do
+    before { sign_in_as(user) }
+
+    let!(:first) { create(:task, user: user, title: "First") }
+    let!(:second) { create(:task, user: user, title: "Second") }
+    let!(:third) { create(:task, user: user, title: "Third") }
+
+    it "reorders tasks and returns the updated sibling list" do
+      mutation = <<~GQL
+        mutation ReorderTask($id: ID!, $position: Int!) {
+          reorderTask(input: { id: $id, position: $position }) {
+            tasks { id title position }
+          }
+        }
+      GQL
+
+      graphql_post(
+        query: mutation,
+        variables: { id: second.id.to_s, position: 2 },
+        operation_name: "ReorderTask"
+      )
+
+      titles = graphql_data.fetch("reorderTask").fetch("tasks").map { |task| task["title"] }
+      positions = graphql_data.fetch("reorderTask").fetch("tasks").map { |task| task["position"] }
+
+      expect(titles).to eq([ "First", "Third", "Second" ])
+      expect(positions).to eq([ 0, 1, 2 ])
+    end
+  end
+
   context "when not authenticated" do
     it "returns an authentication error for tasks query" do
       graphql_post(query: "query { tasks { id } }")

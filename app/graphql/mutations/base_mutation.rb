@@ -35,5 +35,13 @@ module Mutations
 
       parent
     end
+
+    def find_owned_tag!(id)
+      require_authentication!
+      tag = current_user.tags.find_by(id: id)
+      raise GraphQL::ExecutionError, "Tag not found" unless tag
+
+      tag
+    end
   end
 end

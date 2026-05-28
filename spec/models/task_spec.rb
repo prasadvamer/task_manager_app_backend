@@ -72,6 +72,13 @@ RSpec.describe Task, type: :model do
 
       expect { parent.destroy }.to change(Task, :count).by(-3)
     end
+
+    it "cleans up orphaned tags when the task is deleted" do
+      task = create(:task)
+      task.sync_tags!(%w[work])
+
+      expect { task.destroy }.to change(Tag, :count).by(-1)
+    end
   end
 
   describe "#sync_tags!" do
@@ -80,6 +87,29 @@ RSpec.describe Task, type: :model do
       task.sync_tags!(%w[Work URGENT])
 
       expect(task.tags.pluck(:name)).to match_array(%w[work urgent])
+    end
+
+    it "removes orphaned tags when they are no longer assigned" do
+      task = create(:task)
+      task.sync_tags!(%w[work urgent])
+      urgent = task.tags.find_by!(name: "urgent")
+
+      task.sync_tags!(%w[work])
+
+      expect(Tag.exists?(urgent.id)).to be(false)
+      expect(task.reload.tags.pluck(:name)).to eq([ "work" ])
+    end
+
+    it "keeps tags that are still assigned to other tasks" do
+      user = create(:user)
+      first = create(:task, user: user)
+      second = create(:task, user: user)
+      first.sync_tags!(%w[shared personal])
+      second.sync_tags!(%w[shared])
+
+      first.sync_tags!(%w[personal])
+
+      expect(user.tags.pluck(:name)).to match_array(%w[personal shared])
     end
   end
 

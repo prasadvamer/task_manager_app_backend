@@ -15,12 +15,14 @@ class Task < ApplicationRecord
 
   before_validation :assign_position, on: :create
   before_save :sync_completed_at
+  after_destroy :cleanup_orphan_tags
 
   scope :top_level, -> { where(parent_id: nil) }
 
   def sync_tags!(tag_names)
     normalized = Array(tag_names).map { |name| name.to_s.strip.downcase }.reject(&:blank?).uniq
     self.tags = normalized.map { |name| user.tags.find_or_create_by!(name: name) }
+    Tag.cleanup_orphans_for(user)
   end
 
   def toggle_complete!
@@ -82,5 +84,9 @@ class Task < ApplicationRecord
     if parent_id == id
       errors.add(:parent, "cannot be the task itself")
     end
+  end
+
+  def cleanup_orphan_tags
+    Tag.cleanup_orphans_for(user)
   end
 end

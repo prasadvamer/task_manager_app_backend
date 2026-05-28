@@ -6,4 +6,8 @@ class Tag < ApplicationRecord
   normalizes :name, with: ->(name) { name.strip.downcase }
 
   validates :name, presence: true, uniqueness: { scope: :user_id, case_sensitive: false }
+
+  def self.cleanup_orphans_for(user)
+    user.tags.where.missing(:task_tags).destroy_all
+  end
 end

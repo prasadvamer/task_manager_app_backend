@@ -35,8 +35,7 @@ gem "image_processing", "~> 1.2"
 gem "graphql", "~> 2.6"
 gem "rack-attack", "6.7.0"
 
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
-# gem "rack-cors"
+gem "rack-cors", require: "rack/cors"
 
 group :development, :test do
   gem "rspec-rails", "~> 8.0"

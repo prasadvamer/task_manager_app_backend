@@ -16,6 +16,7 @@ services:
       DATABASE_PORT: ${DB_PORT:-5432}
       DATABASE_NAME: ${DB_NAME:-task_manager_db}
       APP_HOSTNAME: "http://localhost:3000"
+      FRONTEND_ORIGIN: "http://localhost:5173"
 
     ports:
       - "3000:3000"
@@ -39,6 +40,43 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ../frontend-app
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_VERSION: 24.16
+    image: frontend-app-dev:latest
+    container_name: frontend_app
+    environment:
+      NEXT_PUBLIC_GRAPHQL_URL: "/graphql"
+      GRAPHQL_PROXY_TARGET: "http://app:3000"
+    depends_on:
+      - app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend-app:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+          pids: 128
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # PostgreSQL Database
   postgres:
     image: postgres:18.4
@@ -99,3 +137,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  frontend_node_modules:
+  frontend_next:

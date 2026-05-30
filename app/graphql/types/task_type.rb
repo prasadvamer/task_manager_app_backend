@@ -21,7 +21,7 @@ module Types
     end
 
     def subtasks
-      object.subtasks
+      object.subtasks.order(:position)
     end
   end
 end

@@ -58,8 +58,10 @@ jobs:
       - name: Start app container
         run: docker compose up -d app
 
-      - name: Run database migrations
-        run: docker compose exec -e RAILS_ENV=test app bin/rails db:migrate
+      - name: Set up database
+        run: |
+          docker compose exec app bin/rails db:prepare
+          docker compose exec app bin/rails db:test:prepare
 
       - name: Run RSpec
         run: docker compose exec app bundle exec rspec --format documentation

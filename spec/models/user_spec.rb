@@ -37,8 +37,8 @@ RSpec.describe User, type: :model do
 
   describe "email normalisation" do
     it "strips whitespace and downcases on save" do
-      user = create(:user, email_address: "  User@Example.COM  ")
-      expect(user.reload.email_address).to eq("user@example.com")
+      user = create(:user, email_address: "  Admin@Example.COM  ")
+      expect(user.reload.email_address).to eq("admin@example.com")
     end
   end
 

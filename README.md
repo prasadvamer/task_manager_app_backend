@@ -103,3 +103,11 @@ docker compose exec app bundle exec rspec
 ```
 
 Coverage includes model specs (task reordering, tag sync, validations) and request specs for all GraphQL mutations and queries.
+
+---
+
+## CI Workflows
+
+There's a GitHub Actions workflow that runs on every PR against main. It spins up 3 jobs in parallel: a security scan (brakeman + bundler-audit), a lint check (rubocop), and the full rspec suite. All three have to pass before the PR can merge.
+
+The workflow runs on a self-hosted runner rather than GitHub-hosted — the runner image is something I built and published myself: [prasadvamer/github-selfhosted-runner](https://hub.docker.com/r/prasadvamer/github-selfhosted-runner) on Docker Hub.

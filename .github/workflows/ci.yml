@@ -45,3 +45,27 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down
+
+  test:
+    runs-on: [self-hosted, docker]
+    env:
+      COMPOSE_PROJECT_NAME: ci-test-${{ github.run_id }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start app container
+        run: docker compose up -d app
+
+      - name: Set up database
+        run: |
+          docker compose exec app bin/rails db:prepare
+          docker compose exec app bin/rails db:test:prepare
+
+      - name: Run RSpec
+        run: docker compose exec app bundle exec rspec --format documentation
+
+      - name: Tear down
+        if: always()
+        run: docker compose down

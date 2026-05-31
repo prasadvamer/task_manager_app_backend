@@ -99,7 +99,7 @@ Backend runs on `http://localhost:3000`, frontend on `http://localhost:5173`.
 ## Tests
 
 ```bash
-docker compose exec app bin/rspec
+docker compose exec app bundle exec rspec
 ```
 
 Coverage includes model specs (task reordering, tag sync, validations) and request specs for all GraphQL mutations and queries.

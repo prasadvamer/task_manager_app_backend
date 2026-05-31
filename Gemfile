@@ -33,7 +33,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 gem "graphql", "~> 2.6"
-gem "rack-attack", "6.7.0"
+gem "rack-attack", "6.8.0"
 
 gem "rack-cors", require: "rack/cors"
 

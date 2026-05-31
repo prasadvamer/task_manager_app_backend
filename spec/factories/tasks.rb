@@ -28,7 +28,7 @@ FactoryBot.define do
 
     trait :with_tags do
       after(:create) do |task|
-        task.sync_tags!( %w[work urgent] )
+        task.sync_tags!(%w[work urgent])
       end
     end
   end

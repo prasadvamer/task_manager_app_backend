@@ -31,7 +31,7 @@ RSpec.describe GraphqlController, type: :request do
 
     context "when variables is an unexpected type" do
       it "returns a 500 error" do
-        post_graphql(query: me_query, variables: [1, 2, 3], operationName: "Me")
+        post_graphql(query: me_query, variables: [ 1, 2, 3 ], operationName: "Me")
         expect(response).to have_http_status(500)
       end
     end
